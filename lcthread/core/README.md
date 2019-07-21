@@ -1,0 +1,1 @@
+此文件夹包含了lcthread的核心文件，线程方案使用std的标准thread
