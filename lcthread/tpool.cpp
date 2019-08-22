@@ -1,6 +1,6 @@
 /*
-    Ò»¸öCPP11µÄÏß³Ì³Ø½á¹¹£¬·ÂÔìÁËJAVAÖĞµÄĞ´·¨
-    ×÷Õß£ºÂŞÔöîñ  
+    ä¸€ä¸ªCPP11çš„çº¿ç¨‹æ± ç»“æ„ï¼Œä»¿é€ äº†JAVAä¸­çš„å†™æ³•
+    ä½œè€…ï¼šç½—å¢é“–  
     qq : 615893982
 */
 #include<iostream>
@@ -18,27 +18,27 @@ public:
 	public:
 		virtual void run() { cout << "tjob" << endl; };
 	};
-	queue<tjob*> job;//ÈÎÎñÁĞ±í
+	queue<tjob*> job;//ä»»åŠ¡åˆ—è¡¨
 	mutex mutex_global,job_mutex;
 	condition_variable cv;
 	thread *tlist;
-	int num_running,n;//ÈÎÎñ¸öÊı
-	bool if_init;
+	int num_running,n;//ä»»åŠ¡ä¸ªæ•°
+	//bool if_init;
 	tpool(int const &_n):n(_n) {
-		//³õÊ¼»¯Ïß³Ì³Ø¸öÊı
-		if_init = false;
+		//åˆå§‹åŒ–çº¿ç¨‹æ± ä¸ªæ•°
+		//if_init = false;
 		num_running = 0;
 		//job_mutex = new mutex[_n];
 		tlist = new thread[_n];
 		for (int i = 0; i < _n; i++) {
-			tlist[i]=thread([this,i]() {//Ö±½ÓÔÚÕâÀïÓÃlambda±í´ïÊ½½¨Á¢Ïß³Ì
+			tlist[i]=thread([this,i]() {//ç›´æ¥åœ¨è¿™é‡Œç”¨lambdaè¡¨è¾¾å¼å»ºç«‹çº¿ç¨‹
 				
 				while (1) {
 					unique_lock<mutex> lock(this->job_mutex);
 					//while(this->if_init==false)
 					this->cv.wait(lock, [this] {
 						return !this->job.empty();
-					});//µÈ´ı×èÈûÏß³Ì£¬Ö±µ½updateÖĞÍ¨Öª×´Ì¬¸Ä±ä
+					});//ç­‰å¾…é˜»å¡çº¿ç¨‹ï¼Œç›´åˆ°updateä¸­é€šçŸ¥çŠ¶æ€æ”¹å˜
 					if (this->job.size() != 0)
 					{
 						this->mutex_global.lock();
@@ -48,7 +48,7 @@ public:
 						this->num_running++;
 						job->run();
 						this->num_running--;
-						cout << i<<"Ïß³ÌÔËĞĞÍê±Ï,µ±Ç°ÔËĞĞ"<<this->num_running<<"/"<<this->n<<"ÈÎÎñ£¬ÈÎÎñ¶ÓÁĞÖĞ»¹Ê£Óà"<<this->job.size()<<"¸öÈÎÎñÎ´´¦Àí" << endl;
+						cout << i<<"çº¿ç¨‹è¿è¡Œå®Œæ¯•,å½“å‰è¿è¡Œ"<<this->num_running<<"/"<<this->n<<"ä»»åŠ¡ï¼Œä»»åŠ¡é˜Ÿåˆ—ä¸­è¿˜å‰©ä½™"<<this->job.size()<<"ä¸ªä»»åŠ¡æœªå¤„ç†" << endl;
 
 						//this->if_init = false;
 					}
@@ -61,20 +61,20 @@ public:
 	tpool() {
 		int _n = this->core_num();
 		this->n = _n;
-		//³õÊ¼»¯Ïß³Ì³Ø¸öÊı
-		if_init = false;
+		//åˆå§‹åŒ–çº¿ç¨‹æ± ä¸ªæ•°
+		//if_init = false;
 		num_running = 0;
 		//job_mutex = new mutex[_n];
 		tlist = new thread[_n];
 		for (int i = 0; i < _n; i++) {
-			tlist[i] = thread([this, i]() {//Ö±½ÓÔÚÕâÀïÓÃlambda±í´ïÊ½½¨Á¢Ïß³Ì
+			tlist[i] = thread([this, i]() {//ç›´æ¥åœ¨è¿™é‡Œç”¨lambdaè¡¨è¾¾å¼å»ºç«‹çº¿ç¨‹
 
 				while (1) {
 					unique_lock<mutex> lock(this->job_mutex);
 					//while(this->if_init==false)
 					this->cv.wait(lock, [this] {
 						return !this->job.empty();
-					});//µÈ´ı×èÈûÏß³Ì£¬Ö±µ½updateÖĞÍ¨Öª×´Ì¬¸Ä±ä
+					});//ç­‰å¾…é˜»å¡çº¿ç¨‹ï¼Œç›´åˆ°updateä¸­é€šçŸ¥çŠ¶æ€æ”¹å˜
 					if (this->job.size() != 0)
 					{
 						this->mutex_global.lock();
@@ -90,7 +90,7 @@ public:
 						this->mutex_global.lock();
 						this->num_running--;
 						this->mutex_global.unlock();
-						cout << i << "Ïß³ÌÔËĞĞÍê±Ï,µ±Ç°ÔËĞĞ" << this->num_running << "/" << this->n << "ÈÎÎñ£¬ÈÎÎñ¶ÓÁĞÖĞ»¹Ê£Óà" << this->job.size() << "¸öÈÎÎñÎ´´¦Àí" << endl;
+						cout << i << "çº¿ç¨‹è¿è¡Œå®Œæ¯•,å½“å‰è¿è¡Œ" << this->num_running << "/" << this->n << "ä»»åŠ¡ï¼Œä»»åŠ¡é˜Ÿåˆ—ä¸­è¿˜å‰©ä½™" << this->job.size() << "ä¸ªä»»åŠ¡æœªå¤„ç†" << endl;
 
 						//this->if_init = false;
 					}
@@ -101,13 +101,13 @@ public:
 		}
 	}
 	void addTask(tjob& job) {
-		//cout << "Ìí¼ÓÈÎÎñ" << endl;
+		//cout << "æ·»åŠ ä»»åŠ¡" << endl;
 		this->job.push(&job);
 		this->update();
 		
 	}
 	void update() {
-		//¸üĞÂÏß³Ì×´Ì¬
+		//æ›´æ–°çº¿ç¨‹çŠ¶æ€
 		this->cv.notify_one();
 	}
 	unsigned int core_num(){
@@ -122,12 +122,12 @@ public:
 		this->time = time;
 	}
 	void run() {
-		//cout << "ÎÒÒªÔËĞĞ"<<this->time<<"ms." << endl;
+		//cout << "æˆ‘è¦è¿è¡Œ"<<this->time<<"ms." << endl;
 		Sleep(this->time);
 	}
 };
 int main() {
-	tpool pool;//²»¼Ó¹¹Ôì²ÎÊıÄ¬ÈÏÈ¡ÏµÍ³×î´óºËĞÄÊı 
+	tpool pool;//ä¸åŠ æ„é€ å‚æ•°é»˜è®¤å–ç³»ç»Ÿæœ€å¤§æ ¸å¿ƒæ•° 
 	//pool.addTask(*new job1());
 	pool.addTask(*new job2(500));
 	pool.addTask(*new job2(1000));
