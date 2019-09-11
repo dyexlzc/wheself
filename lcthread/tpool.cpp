@@ -3,14 +3,15 @@
     作者：罗增铖  
     qq : 615893982
 */
-#ifndef _THREADPOOL_H
-#define _THREADPOOL_H
+#include<iostream>
+#include<vector>
+#include<string>
+#include<windows.h>
 #include<mutex>
 #include<thread>
 #include<queue>
+#include<atomic>
 #include<condition_variable>
-#include<string>
-#include<iostream>
 using namespace std;
 class ThreadPool {
 public:
@@ -23,16 +24,17 @@ private:
 	mutex mutex_global, job_mutex;
 	condition_variable cv;
 	thread *tlist;
-	int num_running, n;//任务个数
+	atomic<int> num_running, n;//任务个数
 public:
 
-	ThreadPool(int const &_n=0):n(_n) {
+	ThreadPool(int const &_n=0) {
 		//初始化线程池个数
+		atomic_init<int>(&n,_n);
 		if (_n == 0) {
-			this->n = std::move(this->core_num());
+			atomic_init<int>(&n,this->core_num());
 		}
-		cout << this->n;
-		num_running = 0;
+		//cout << this->n;
+		atomic_init<int>(&num_running,0);
 		tlist = new thread[n];
 		for (int i = 0; i < n; i++) {
 			tlist[i] = thread([this, i]() {//直接在这里用lambda表达式建立线程
@@ -46,10 +48,13 @@ public:
 					{
 						this->mutex_global.lock();
 						job* job = this->_job.front(); this->_job.pop();
-						lock.unlock();
-						this->num_running++;this->mutex_global.unlock();
+						this->mutex_global.unlock();
+
+						lock.unlock();//释放当前线程
+						this->num_running++;
 						job->run();
-						this->mutex_global.lock(); this->num_running--;this->mutex_global.unlock();
+						this->num_running--;
+						//this->mutex_global.lock(); this->num_running--;this->mutex_global.unlock();
 
 					}
 
@@ -59,8 +64,8 @@ public:
 		}
 	}
 
-	void addTask(job& job) {
-		this->_job.push(&job);
+	void addTask(job* job) {
+		this->_job.push(job);
 		this->update();
 
 	}
@@ -73,4 +78,28 @@ public:
 	}
 
 };
-#endif
+class job2 : public ThreadPool::job {
+public:
+	int id;
+	job2(int i) {
+		this->id = i;
+	}
+	void run() {
+		while (1) {
+			cout << id; Sleep(id);
+		}
+		
+	}
+};
+int main() {
+	ThreadPool pool;//不加构造参数默认取系统最大核心数 
+	 
+	pool.addTask(new job2(1));
+	pool.addTask(new job2(2));
+	string cmd;
+	while(1){
+		cin>>cmd;
+		if(cmd=="exit")return 0;
+	}
+	return 0;
+}
